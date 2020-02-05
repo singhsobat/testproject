@@ -5,6 +5,7 @@ const {
   dialogflow,
   SimpleResponse,
   BasicCard,
+  List,
   Image,
   Suggestions,
   Button,
@@ -107,7 +108,8 @@ app.intent('contactsIntent', (conv,{bhawan,contacts}) => {
 								  }),
       						}),
     						],
-  					}));
+					  })
+					  );
 				conv.ask(ssml);
 				resolve();
 			} else{
@@ -295,19 +297,22 @@ app.intent('MessIntent', (conv) => {
 app.intent('handoutIntent', (conv,{departments}) => {
 	return new Promise( (( resolve,reject) => {
 		console.log("Handout intent triggered.");
-		console.log(`Departmnet: ${departments}`);
-		var ref = db.ref(`/departments/${departments}`);  
+		console.log(`Departmentt: ${departments}`);
+		var ref = db.ref(`/handouts/${departments}`);  
 		ref.on("value", (snapshot) => {	 		
 			var dept = snapshot.val();
 			var keys = Object.keys(dept);
+			console.log(dept);
 			var courses = {};
-			for(i=0;i<keys.length;i++)
-			{
+			
+			for( var i =  0; i<keys.length ;i++)
+			{	
 				courses[keys[i]]={
-					title: keys[i],
-					description: dept.keys[i].course_name
+					title: keys[i]
+					// description: dept.temp.course_name
 				}
 			}
+			console.log(JSON.stringify(courses,null,3));
 			
 			if (!conv.screen) {
 				conv.ask('Sorry, try this on a screen device or select the ' +
@@ -316,11 +321,12 @@ app.intent('handoutIntent', (conv,{departments}) => {
 				return;
 			}
 			else{
-				conv.ask(`The course in ${departments} are given below you can choose any one of these to get the handout.`);
+				const speak= `The courses in ${departments} are given below you'+ ' <break time="500ms">'+' can choose any one of these to get the handout.`;
+				conv.ask(speak);
 				conv.ask(new List({
 					items: courses
 				}));
-				conv.ask(ssml);
+				// conv.ask(ssml);
 				resolve();
 			}
 		}, (errorObject) => {
@@ -330,26 +336,26 @@ app.intent('handoutIntent', (conv,{departments}) => {
 	}));
 });
 
-app.intent('handoutlistIntent',(conv,option) =>{
-	if (!conv.screen) {
-		conv.ask('Sorry, try this on a screen device or select the phone surface in the simulator.');
-		conv.ask(ssml);
-		return;
-	  }
-	  else{
-		  for(i=0;i<keys.length;i++)
-		  {
-			  if(option===keys[i])
-					var url = 'https://academic.bits-pilani.ac.in/Faculty/FINAL_HANDOUT_FILES/'+dept.keys[i].course_code + '_' + dept.keys[i].copm_code;
-		  }
-		  conv.ask(new LinkOutSuggestion({
-			name: 'Your link to handout ',
-			url: url,
-		  }));
-		  conv.ask(ssml);
+// app.intent('optionselectedIntent',(conv,option) =>{
+// 	if (!conv.screen) {
+// 		conv.ask('Sorry, try this on a screen device or select the phone surface in the simulator.');
+// 		conv.ask(ssml);
+// 		return;
+// 	  }
+// 	  else{
+// 		  for(i=0;i<keys.length;i++)
+// 		  {
+// 			  if(option===keys[i])
+// 					var url = 'https://academic.bits-pilani.ac.in/Faculty/FINAL_HANDOUT_FILES/'+dept.keys[i].course_code + '_' + dept.keys[i].comp_code;
+// 		  }
+// 		  conv.ask(new LinkOutSuggestion({
+// 			name: 'Your link to handout ',
+// 			url: url,
+// 		  }));
+// 		  conv.ask(ssml);
 
-	  }
-});
+// 	  }
+// });
 
 function fixformat(date){
 	if(date[8] === '0'){
